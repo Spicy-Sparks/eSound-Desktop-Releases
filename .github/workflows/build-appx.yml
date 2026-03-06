@@ -1,0 +1,45 @@
+name: Build APPX
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-appx:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Download build zip
+        run: |
+          gh release download appx-build --pattern "appx-build.zip" --dir .
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract build
+        run: Expand-Archive -Path appx-build.zip -DestinationPath electron-app
+
+      - name: Install dependencies
+        working-directory: electron-app
+        run: yarn install --frozen-lockfile
+
+      - name: Build APPX
+        working-directory: electron-app
+        run: npx electron-builder@24.13.3 --win appx --x64 --publish never
+
+      - name: Upload APPX artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: esound-music-appx
+          path: electron-app/dist/*.appx
+
+      - name: Cleanup temp release
+        if: always()
+        run: gh release delete appx-build --repo Spicy-Sparks/eSound-Desktop-Releases --yes --cleanup-tag 2>$null; exit 0
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
