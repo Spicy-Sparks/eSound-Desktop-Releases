@@ -28,6 +28,12 @@ jobs:
         working-directory: electron-app
         run: yarn install --frozen-lockfile
 
+      - name: Strip EV signing (the Store re-signs the package)
+        working-directory: electron-app
+        run: |
+          npm pkg delete build.win.signtoolOptions
+          npm pkg delete build.win.sign
+
       - name: Build APPX
         working-directory: electron-app
         run: npx electron-builder@26.15.3 --win appx --x64 --publish never
