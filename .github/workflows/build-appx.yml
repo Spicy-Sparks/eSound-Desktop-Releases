@@ -31,6 +31,10 @@ jobs:
         # where this workflow builds the Store package. They are not used here.
         # --ignore-optional: one transitive optional dep resolves to a git+ssh:// URL the
         # runner has no key for; it is optional, and fetching it is not worth a deploy key.
+        # DESKTOP_PREBUILT: this tree is an already-built app, not a source
+        # checkout — the desktop postinstall must not look for the sibling repos.
+        env:
+          DESKTOP_PREBUILT: '1'
         run: yarn install --frozen-lockfile --ignore-platform --ignore-optional
 
       - name: Strip EV signing (the Store re-signs the package)
